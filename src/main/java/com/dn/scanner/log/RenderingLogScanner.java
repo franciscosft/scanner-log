@@ -1,5 +1,6 @@
 package com.dn.scanner.log;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,13 +9,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import com.dn.scanner.log.dto.DocumentRequest;
 import com.dn.scanner.log.dto.GetRendering;
 import com.dn.scanner.log.dto.Rendering;
 import com.dn.scanner.log.dto.Report;
 import com.dn.scanner.log.dto.Summary;
 
+
 public class RenderingLogScanner {
+	
 
 	private static final String RENDERING_START = "Executing request startRendering";
 	private static final String RENDERING_ID = "Service startRendering returned";
@@ -55,7 +72,7 @@ public class RenderingLogScanner {
 				});
 			}
 		});
-
+		
 		System.err.println("----- Report ------");
 		System.err.println(startRenderingMap.size());
 		startRenderingMap.values().forEach(s -> {
@@ -73,6 +90,10 @@ public class RenderingLogScanner {
 		report.setSummary(summary);
 
 		System.out.println(summary);
+		
+//		Formatter formmater = new XMLFormatter();
+		Formatter formmater = new JsonFormatter();
+		formmater.format(report);
 	}
 
 	private static int getUnnecessary(Map<DocumentRequest, Rendering> startRenderingMap) {
