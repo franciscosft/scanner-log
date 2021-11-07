@@ -15,6 +15,7 @@ import com.dn.scanner.log.dto.GetRendering;
 import com.dn.scanner.log.dto.Rendering;
 import com.dn.scanner.log.dto.Report;
 import com.dn.scanner.log.dto.Summary;
+import com.dn.scanner.log.exception.FormatterException;
 import com.dn.scanner.log.util.MatcherUtils;
 
 public class RenderingLogScanner {
@@ -26,18 +27,13 @@ public class RenderingLogScanner {
 	public static void getRenderingStatistics(Path logFile) throws IOException {
 		Map<String, DocumentRequest> threadContext = new HashMap<>();
 		Map<DocumentRequest, Rendering> renderingMap = new HashMap<>();
-		Map<DocumentRequest, Rendering> getRenderingMap = new HashMap<>();
 
 		Files.lines(logFile).forEach(line -> {
-			// System.err.println(line);
 			if (line.contains(RENDERING_START)) {
-				// System.err.println(line);
 				DocumentRequest documenteRequest = MatcherUtils.getDocumentRequest(line).orElseThrow();
 				String threadName = documenteRequest.getThread();
-//				System.err.println(threadName + " ---- " + documenteRequest);
 				threadContext.put(threadName, documenteRequest);
 			} else if (line.contains(RENDERING_ID)) {
-				// System.err.println(line);
 				String uid = MatcherUtils.getUidStart(line).orElseThrow();
 				String threadName = MatcherUtils.getThread(line).orElseThrow();
 				DocumentRequest documentRequest = threadContext.get(threadName);
@@ -60,6 +56,20 @@ public class RenderingLogScanner {
 			}
 		});
 
+		Report report = getReport(renderingMap);
+
+		List<Formatter> formatters = new ArrayList<>(Arrays.asList(new XMLFormatter(), new JsonFormatter()));
+		formatters.forEach(formatter -> {
+			try {
+				formatter.format(report);
+			} catch (FormatterException e) {
+				e.printStackTrace();
+				System.err.println("Occurred some problem to format the report");
+			}
+		});
+	}
+
+	private static Report getReport(Map<DocumentRequest, Rendering> renderingMap) {
 		Report report = new Report();
 		report.setRendering(renderingMap.values().stream().collect(Collectors.toList()));
 
@@ -68,9 +78,7 @@ public class RenderingLogScanner {
 		summary.setDuplicates(getDuplicates(renderingMap));
 		summary.setUnnecessary(getUnnecessary(renderingMap));
 		report.setSummary(summary);
-
-		List<Formatter> formatters = new ArrayList<>(Arrays.asList(new XMLFormatter(), new JsonFormatter()));
-		formatters.forEach(formatter -> formatter.format(report));
+		return report;
 	}
 
 	private static int getUnnecessary(Map<DocumentRequest, Rendering> startRenderingMap) {
