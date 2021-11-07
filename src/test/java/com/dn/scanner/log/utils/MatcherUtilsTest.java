@@ -23,18 +23,41 @@ public class MatcherUtilsTest {
 	}
 	
 	@Test
-	public void getUidTest() {
+	public void getDocumentRequestNotMatchTest() {
 		String log = "2010-10-06 09:02:14,825 [WorkerThread-0] INFO  [ServiceProvider]: Executing request getRendering with arguments [1286373733634-5423] on service object { ReflectionServiceObject -> com.dn.gaverzicht.dms.services.DocumentService@4a3a4a3a }";
+		Optional<DocumentRequest> documentRequest = MatcherUtils.getDocumentRequest(log);
+		Assertions.assertTrue(documentRequest.isEmpty());
+	}
+	
+	@Test
+	public void getUidTest() {
+ 		String log = "2010-10-06 09:02:14,825 [WorkerThread-0] INFO  [ServiceProvider]: Executing request getRendering with arguments [1286373733634-5423] on service object { ReflectionServiceObject -> com.dn.gaverzicht.dms.services.DocumentService@4a3a4a3a }";
 		Optional<String> uidGet = MatcherUtils.getUidGet(log);
+		Assertions.assertFalse(uidGet.isEmpty());
 		Assertions.assertEquals("1286373733634-5423", uidGet.get());
+	}
+	
+	@Test
+	public void getUidNotMatchTest() {
+		String log = "2010-10-06 09:02:13,631 [WorkerThread-2] INFO  [ServiceProvider]: Executing request startRendering with arguments [114466, 0] on service object { ReflectionServiceObject -> com.dn.gaverzicht.dms.services.DocumentService@4a3a4a3a }";
+		Optional<String> uidGet = MatcherUtils.getUidGet(log);
+		Assertions.assertTrue(uidGet.isEmpty());
 	}
 
 	@Test
 	public void getRenderingTest() {
 		String log = "2010-10-06 09:02:14,825 [WorkerThread-0] INFO  [ServiceProvider]: Executing request getRendering with arguments [1286373733634-5423] on service object { ReflectionServiceObject -> com.dn.gaverzicht.dms.services.DocumentService@4a3a4a3a }";
 		Optional<GetRendering> getRendering = MatcherUtils.getGetRendering(log);
+		Assertions.assertFalse(getRendering.isEmpty());
 		Assertions.assertEquals("2010-10-06 09:02:14,825", getRendering.get().getTimestamp());
 		Assertions.assertEquals("1286373733634-5423", getRendering.get().getUid());
+	}
+	
+	@Test
+	public void getRenderingNotMachTest() {
+		String log = "2010-10-06 09:02:13,631 [WorkerThread-2] INFO  [ServiceProvider]: Executing request startRendering with arguments [114466, 0] on service object { ReflectionServiceObject -> com.dn.gaverzicht.dms.services.DocumentService@4a3a4a3a }";
+		Optional<GetRendering> getRendering = MatcherUtils.getGetRendering(log);
+		Assertions.assertTrue(getRendering.isEmpty());
 	}
 
 }
