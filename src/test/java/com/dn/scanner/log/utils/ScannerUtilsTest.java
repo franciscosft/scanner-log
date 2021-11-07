@@ -10,9 +10,6 @@ import java.nio.file.StandardCopyOption;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.dn.scanner.log.App;
-import com.dn.scanner.log.util.ScannerUtils;
-
 public class ScannerUtilsTest {
 	
 	@Test
@@ -22,7 +19,7 @@ public class ScannerUtilsTest {
 	}
 
 	private File getLogFile() {
-		try (InputStream resourceAsStream = App.class.getResourceAsStream("/server.log")) {
+		try (InputStream resourceAsStream = ScannerUtilsTest.class.getResourceAsStream("/server.log")) {
     		File createTempFile = File.createTempFile("temp",".log");
     		Files.copy(resourceAsStream, createTempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     		return createTempFile;
