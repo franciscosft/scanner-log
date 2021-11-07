@@ -34,7 +34,7 @@ public class ScannerUtilsTest {
 	}
 	
 	@Test
-	public void loadLogFileTest() throws URISyntaxException {
+	public void loadLogFileTest() throws URISyntaxException, IOException {
 		File loadLogFile = ScannerUtils.loadLogFile();
 		Assertions.assertNotNull(loadLogFile);
 		
