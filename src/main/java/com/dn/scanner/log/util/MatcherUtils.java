@@ -1,4 +1,4 @@
-package com.dn.scanner.log;
+package com.dn.scanner.log.util;
 
 import java.util.Optional;
 import java.util.function.Function;

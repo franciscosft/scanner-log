@@ -1,4 +1,4 @@
-package com.dn.scanner.log;
+package com.dn.scanner.log.utils;
 
 import java.util.Optional;
 
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.dn.scanner.log.dto.GetRendering;
+import com.dn.scanner.log.util.MatcherUtils;
 import com.dn.scanner.log.dto.DocumentRequest;
 
 public class MatcherUtilsTest {
