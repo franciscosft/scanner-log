@@ -3,8 +3,6 @@ package com.dn.scanner.log;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.dn.scanner.log.util.ScannerUtils;
 
 public class App {
