@@ -1,37 +1,23 @@
 package com.dn.scanner.log;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import com.dn.scanner.log.dto.DocumentRequest;
 import com.dn.scanner.log.dto.GetRendering;
 import com.dn.scanner.log.dto.Rendering;
 import com.dn.scanner.log.dto.Report;
 import com.dn.scanner.log.dto.Summary;
-
+import com.dn.scanner.log.util.MatcherUtils;
 
 public class RenderingLogScanner {
-	
 
 	private static final String RENDERING_START = "Executing request startRendering";
 	private static final String RENDERING_ID = "Service startRendering returned";
@@ -39,7 +25,7 @@ public class RenderingLogScanner {
 
 	public static void getRenderingStatistics(Path logFile) throws IOException {
 		Map<String, DocumentRequest> threadContext = new HashMap<>();
-		Map<DocumentRequest, Rendering> startRenderingMap = new HashMap<>();
+		Map<DocumentRequest, Rendering> renderingMap = new HashMap<>();
 		Map<DocumentRequest, Rendering> getRenderingMap = new HashMap<>();
 
 		Files.lines(logFile).forEach(line -> {
@@ -56,7 +42,7 @@ public class RenderingLogScanner {
 				String threadName = MatcherUtils.getThread(line).orElseThrow();
 				DocumentRequest documentRequest = threadContext.get(threadName);
 				if (documentRequest != null) {
-					Rendering rendering = startRenderingMap.computeIfAbsent(documentRequest,
+					Rendering rendering = renderingMap.computeIfAbsent(documentRequest,
 							docReq -> new Rendering(documentRequest.getDocumentId(), documentRequest.getPage(), uid,
 									new ArrayList<>(), new ArrayList<>()));
 					rendering.getStart().add(documentRequest.getTimestamp());
@@ -65,35 +51,26 @@ public class RenderingLogScanner {
 				GetRendering getRendering = MatcherUtils.getGetRendering(line).orElseThrow();
 				String uidGetRendering = getRendering.getUid();
 
-				startRenderingMap.entrySet().forEach(e -> {
+				renderingMap.entrySet().forEach(e -> {
 					if (e.getValue().getUid().equals(uidGetRendering)) {
 						e.getValue().getGet().add(getRendering.getTimestamp());
+						return;
 					}
 				});
 			}
 		});
-		
-		System.err.println("----- Report ------");
-		System.err.println(startRenderingMap.size());
-		startRenderingMap.values().forEach(s -> {
-			System.err.println(s.getDocumentId() + " | " + s.getPage() + " | " + s.getUid() + " | "
-					+ s.getStart().size() + " | " + s.getGet().size());
-		});
 
 		Report report = new Report();
-		report.setRenderings(startRenderingMap.values().stream().collect(Collectors.toList()));
+		report.setRendering(renderingMap.values().stream().collect(Collectors.toList()));
 
 		Summary summary = new Summary();
-		summary.setCount(startRenderingMap.size());
-		summary.setDuplicates(getDuplicates(startRenderingMap));
-		summary.setUnnecessary(getUnnecessary(startRenderingMap));
+		summary.setCount(renderingMap.size());
+		summary.setDuplicates(getDuplicates(renderingMap));
+		summary.setUnnecessary(getUnnecessary(renderingMap));
 		report.setSummary(summary);
 
-		System.out.println(summary);
-		
-//		Formatter formmater = new XMLFormatter();
-		Formatter formmater = new JsonFormatter();
-		formmater.format(report);
+		List<Formatter> formatters = new ArrayList<>(Arrays.asList(new XMLFormatter(), new JsonFormatter()));
+		formatters.forEach(formatter -> formatter.format(report));
 	}
 
 	private static int getUnnecessary(Map<DocumentRequest, Rendering> startRenderingMap) {

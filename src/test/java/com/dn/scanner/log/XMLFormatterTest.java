@@ -7,6 +7,7 @@ public class XMLFormatterTest {
 	
 	@Test
 	public void isXmlTest() {
+		
 		Assertions.assertFalse(false);
 	}
 
