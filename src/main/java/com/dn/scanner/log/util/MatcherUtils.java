@@ -6,27 +6,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.dn.scanner.log.dto.GetRendering;
+import com.dn.scanner.log.dto.Rendering;
+import com.dn.scanner.log.dto.StartRendering;
 import com.dn.scanner.log.dto.DocumentRequest;
 
 public class MatcherUtils {
 	
-	public static final Pattern THREAD_NAME = Pattern.compile(".* \\[(.*)\\] (INFO|DEBUG|WARN|ERROR).*");
-//	public static final Pattern RENDERING = Pattern.compile("(\\S* \\S*) \\[.*arguments \\[(.*), (.*)\\] .*");
 	public static final Pattern RENDERING = Pattern.compile("(\\S* \\S*) \\[(.*)\\] .* \\[.*arguments \\[(.*), (.*)\\] .*");
-	public static final Pattern UID_START = Pattern.compile(".* Service startRendering returned (.*).*");
+	public static final Pattern UID_START = Pattern.compile("(\\S* \\S*) \\[(.*)\\] .* Service startRendering returned (.*).*");
 	public static final Pattern UID_GET = Pattern.compile(".* Executing request getRendering with arguments \\[(.*)\\].*");
 	public static final Pattern GET_RENDERIG = Pattern.compile("(\\S* \\S*)" + UID_GET);
 	
-	public static Optional<String> getUidStart(String line) {
-		return createOnMatch(line, UID_START, matcher -> matcher.group(1));
+	public static Optional<StartRendering> getStartRendering(String line) {
+		return createOnMatch(line, UID_START, matcher -> new StartRendering(matcher.group(1), matcher.group(2), matcher.group(3)) );
 	}
 
 	public static Optional<String> getUidGet(String line) {
 		return createOnMatch(line, UID_GET, matcher -> matcher.group(1));
-	}
-	
-	public static Optional<String> getThread(String line) {
-		return createOnMatch(line, THREAD_NAME, matcher -> matcher.group(1));
 	}
 	
 	public static Optional<GetRendering> getGetRendering(String line) {

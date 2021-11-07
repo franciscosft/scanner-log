@@ -14,6 +14,7 @@ import com.dn.scanner.log.dto.DocumentRequest;
 import com.dn.scanner.log.dto.GetRendering;
 import com.dn.scanner.log.dto.Rendering;
 import com.dn.scanner.log.dto.Report;
+import com.dn.scanner.log.dto.StartRendering;
 import com.dn.scanner.log.dto.Summary;
 import com.dn.scanner.log.exception.FormatterException;
 import com.dn.scanner.log.util.MatcherUtils;
@@ -25,6 +26,12 @@ public class RenderingLogScanner {
 	private static final String RENDERING_GET = "Executing request getRendering with arguments ";
 
 	public static void getRenderingStatistics(Path logFile) throws IOException {
+		Map<DocumentRequest, Rendering> renderingMap = generateReport(logFile);
+		Report report = getReport(renderingMap);
+		formatReport(report);
+	}
+
+	private static Map<DocumentRequest, Rendering> generateReport(Path logFile) throws IOException {
 		Map<String, DocumentRequest> threadContext = new HashMap<>();
 		Map<DocumentRequest, Rendering> renderingMap = new HashMap<>();
 
@@ -34,14 +41,17 @@ public class RenderingLogScanner {
 				String threadName = documenteRequest.getThread();
 				threadContext.put(threadName, documenteRequest);
 			} else if (line.contains(RENDERING_ID)) {
-				String uid = MatcherUtils.getUidStart(line).orElseThrow();
-				String threadName = MatcherUtils.getThread(line).orElseThrow();
+				StartRendering startRendering = MatcherUtils.getStartRendering(line).orElseThrow();
+				String uid = startRendering.getUid();
+				String threadName = startRendering.getThread();
+				String timestamp = startRendering.getTimestamp();
+				
 				DocumentRequest documentRequest = threadContext.get(threadName);
 				if (documentRequest != null) {
 					Rendering rendering = renderingMap.computeIfAbsent(documentRequest,
 							docReq -> new Rendering(documentRequest.getDocumentId(), documentRequest.getPage(), uid,
 									new ArrayList<>(), new ArrayList<>()));
-					rendering.getStart().add(documentRequest.getTimestamp());
+					rendering.getStart().add(timestamp);
 				}
 			} else if (line.contains(RENDERING_GET)) {
 				GetRendering getRendering = MatcherUtils.getGetRendering(line).orElseThrow();
@@ -55,9 +65,10 @@ public class RenderingLogScanner {
 				});
 			}
 		});
+		return renderingMap;
+	}
 
-		Report report = getReport(renderingMap);
-
+	private static void formatReport(Report report) {
 		List<Formatter> formatters = new ArrayList<>(Arrays.asList(new XMLFormatter(), new JsonFormatter()));
 		formatters.forEach(formatter -> {
 			try {
