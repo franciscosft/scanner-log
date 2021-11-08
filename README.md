@@ -21,3 +21,9 @@ This is the Scanner Log application. It will generate XML and JSON file with a r
 - If you want to generate a report with different **server.log**, you can run: `java -jar scanner-log-0.0.1.jar /path/of/other/server.log` 
 
 ![Application success execution](src/main/resources/execution-with-args.png)
+
+## Workspace configuration
+
+- Clone the project;
+- Import it on your IDE;
+- Execute: `mvn clean install`
