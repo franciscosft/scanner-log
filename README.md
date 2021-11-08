@@ -25,5 +25,5 @@ This is the Scanner Log application. It will generate XML and JSON file with a r
 ## Workspace configuration
 
 - Clone the project;
-- Import it on your IDE;
+- Import it on your IDE, I used Eclipse;
 - Execute: `mvn clean install`
