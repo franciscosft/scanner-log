@@ -11,7 +11,7 @@ This is the Scanner Log application. It will generate XML and JSON file with a r
 ## Run application
 
 - Clone this project or just download [here](deploy/scanner.log-0.0.1.jar)
-- Go to the same folder where is .jar file and execute: `java -jar scanner-log-0.0.1.jar`
+- Go to the same folder where is **.jar** file and execute: `java -jar scanner-log-0.0.1.jar`
 - It should apper an output like the image below: 
 
  ![Application success execution](src/main/resources/execution.png)
